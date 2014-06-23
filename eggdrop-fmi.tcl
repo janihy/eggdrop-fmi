@@ -1,9 +1,10 @@
-# FMI-sääscript for eggdrop IRC bot 
+# eggdrop-fmi.tcl - FMI-sääscript for eggdrop IRC bot 
 # by Roni "rolle" Laukkarinen
-# Fetches finnish weather from ilmatieteenlaitos.fi and foreca.fi
+# rolle @ irc.quakenet.org
+# Fetches finnish weather from ilmatieteenlaitos.fi
 
-# Updated:
-set versijonummero "2014-02-11"
+# Updated when:
+set versijonummero "2014-06-23"
 #------------------------------------------------------------------------------------
 # Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
 # Minun reviiri alkaa tästä.
@@ -60,37 +61,26 @@ set lampotila [[[lindex $lampotilahaku 0] childNodes] nodeValue]
 
 # Tämä näytti tältä 13.1.2014: <span class="time-stamp">13.1.2014 22:40&nbsp;Suomen aikaa</span>
 # Copy XPath:
-set mittausaikahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[4]/div[1]/table/caption/span[2]}]
+set mittausaikahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[9]/div[1]/table/caption/span[2]}]
 set aika [$mittausaikahaku asText] 
 
 # En saanut väliä pois joten olkoot "Suomen aikaa" tekstissä, ihan sama...
-set aikasplitted [lindex [split $aika "  Suomen aikaa "] 1]
+# Hajosi lopullisesti 23.6.2014, vaikea selvittää miksi (Tcl error [pub:fmi]: invalid command name ""):
+# set aikasplitted [lindex [split $aika "  Suomen aikaa "] 1]
 
 #------------------------------------------------------------------------------------
 # Mañana:
 #------------------------------------------------------------------------------------
 
-set huomennahaku [$fmi selectNodes {//tr[@class='meteogram-temperatures']/td[2]/span}]
+set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[3]/table/tbody/tr[2]/td[4]/span}]
 set huomenna [$huomennahaku asText]
 
 #------------------------------------------------------------------------------------
 # Auringon nousu ja -lasku ja päivän pituus:
 #------------------------------------------------------------------------------------
 
-set paivahaku [$fmi selectNodes {//div[@class="celestial-status"]}]
+set paivahaku [$fmi selectNodes {//div[@class="celestial-text"]}]
 set paiva [$paivahaku asText]
-
-#------------------------------------------------------------------------------------
-# Kuvaus:
-#------------------------------------------------------------------------------------
-
-#set kuvaushaku [$fmi selectNodes {//*[@id="portlet-wrapper-localweatherportlet_WAR_fmiwwwweatherportlets"]/div[2]/div/div/div/table/tbody/tr[1]/td[1]/div}]
-#set kuvausHtml [$kuvaushaku asHTML]
-#regexp {title="(.*?)"} $kuvausHtml kuvausMatch kuvaustitle
-#set kuvaus $kuvaustitle
-
-## Oma pieni debugger:
-#putserv "PRIVMSG $chan :$kuvaus?"
 
 #------------------------------------------------------------------------------------
 # Tulostetaan palikat alle
@@ -112,4 +102,3 @@ putlog "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika).$paiva\Huomi
 
 # Kukkuluuruu.
 putlog "Rolle's weatherscript (version $versijonummero) LOADED!"
-
