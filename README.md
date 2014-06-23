@@ -4,7 +4,7 @@ There is really no good Finnish weather eggdrop script so I decided to create on
 
 Feel free to use, but if you like it, considering joining #pulina @ quakenet if you are a Finn. (actually I have no idea why would any non-Finn use this script). 
 
-Using this bot, you no longer need to look out the window to check the weather, you can just simply type `!sää` in IRC.
+Using this script, you no longer need to look out the window to check the weather, you can just simply type `!sää` in IRC.
 
 ## Usage
 
