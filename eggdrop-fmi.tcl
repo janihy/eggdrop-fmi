@@ -4,7 +4,7 @@
 # Fetches finnish weather from ilmatieteenlaitos.fi
 
 # Updated when:
-set versijonummero "2014-06-23"
+set versijonummero "2014-07-06"
 #------------------------------------------------------------------------------------
 # Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
 # Minun reviiri alkaa tästä.
@@ -72,7 +72,7 @@ set aika [$mittausaikahaku asText]
 # Mañana:
 #------------------------------------------------------------------------------------
 
-set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[3]/table/tbody/tr[2]/td[4]/span}]
+set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[3]/table/tbody/tr[2]/td[8]/span}]
 set huomenna [$huomennahaku asText]
 
 #------------------------------------------------------------------------------------
@@ -88,8 +88,8 @@ set paiva [$paivahaku asText]
 #
 # Simsalabim:
 
-putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika).$paiva\Huomiseksi luvattu \002$huomenna\002."
-putlog "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika).$paiva\Huomiseksi luvattu \002$huomenna\002."
+putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika).$paiva\Huomispäiväksi luvattu \002$huomenna\002."
+putlog "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika).$paiva\Huomispäiväksi luvattu \002$huomenna\002."
 
 #putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila ($kuvaus, mitattu $aika).$paiva\Huomiseksi luvattu \002$huomenna\002." 
 
