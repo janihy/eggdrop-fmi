@@ -4,7 +4,7 @@
 # Fetches finnish weather from ilmatieteenlaitos.fi
 
 # Updated when:
-set versijonummero "2014-07-06"
+set versijonummero "2014-07-25"
 #------------------------------------------------------------------------------------
 # Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
 # Minun reviiri alkaa tästä.
@@ -72,7 +72,7 @@ set aika [$mittausaikahaku asText]
 # Mañana:
 #------------------------------------------------------------------------------------
 
-set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[3]/table/tbody/tr[2]/td[8]/span}]
+set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[3]/table/tbody/tr[2]/td[6]/span}]
 set huomenna [$huomennahaku asText]
 
 #------------------------------------------------------------------------------------
