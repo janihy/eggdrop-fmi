@@ -4,7 +4,7 @@
 # Fetches finnish weather from ilmatieteenlaitos.fi
 
 # Updated when:
-set versijonummero "2014-07-25"
+set versijonummero "3.2.20150122"
 #------------------------------------------------------------------------------------
 # Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
 # Minun reviiri alkaa tästä.
@@ -36,12 +36,13 @@ set fmidata [dom parse -html $fmisivu]
 set fmi [$fmidata documentElement] 
 
 # Haetaan eri osasia:
-# Note to self: Chromen devaustyökalulla saa kopsattua helposti Copy XPath jos sorsa muuttuu!
+# Note to self: Kopioi uusi XPath jos sorsa muuttuu!
 
 #------------------------------------------------------------------------------------
 # Kaupunni:
 #------------------------------------------------------------------------------------
 
+# Tämä kohta on helpoin ottaa "Edellisen 2 vuorokauden havainnot" alla olevasta kuvasta (22.1.2015).
 set kaupunkihaku [$fmi selectNodes {//*[@id="_localweatherportlet_WAR_fmiwwwweatherportlets_parameter_image"]}]
 set kaupunkiHtml [$kaupunkihaku asHTML]
 regexp {alt="(.*?)"} $kaupunkiHtml kaupunkiMatch kyla1
@@ -52,7 +53,8 @@ set kaupunki [lindex [split $kyla1 ", "] 2]
 # Lämpötila:
 #------------------------------------------------------------------------------------
 
-set lampotilahaku [$fmi selectNodes {//span[@class='parameter-value']}]
+# "Paikalliset säähavainnot" -kohdan "Tuorein säähavainto:" alla oleva "Lämpötila" -sarake
+set lampotilahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div/div[2]/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/span/span[2]}]
 set lampotila [[[lindex $lampotilahaku 0] childNodes] nodeValue] 
 
 #------------------------------------------------------------------------------------
@@ -60,19 +62,19 @@ set lampotila [[[lindex $lampotilahaku 0] childNodes] nodeValue]
 #------------------------------------------------------------------------------------
 
 # Tämä näytti tältä 13.1.2014: <span class="time-stamp">13.1.2014 22:40&nbsp;Suomen aikaa</span>
-# Copy XPath:
-set mittausaikahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[9]/div[1]/table/caption/span[2]}]
+set mittausaikahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div/div[2]/div[1]/div/div[1]/table/caption/span[2]}]
 set aika [$mittausaikahaku asText] 
 
 # En saanut väliä pois joten olkoot "Suomen aikaa" tekstissä, ihan sama...
-# Hajosi lopullisesti 23.6.2014, vaikea selvittää miksi (Tcl error [pub:fmi]: invalid command name ""):
+# Tämä hajosi 23.6.2014:
 # set aikasplitted [lindex [split $aika "  Suomen aikaa "] 1]
 
 #------------------------------------------------------------------------------------
 # Mañana:
 #------------------------------------------------------------------------------------
 
-set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div[3]/table/tbody/tr[2]/td[6]/span}]
+# Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 kohdalla oleva lämpötilasolu
+set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div/div[1]/div/div[2]/table/tbody/tr[2]/td[6]/span}]
 set huomenna [$huomennahaku asText]
 
 #------------------------------------------------------------------------------------
