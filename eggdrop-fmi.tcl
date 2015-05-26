@@ -4,7 +4,7 @@
 # Fetches finnish weather from ilmatieteenlaitos.fi
 
 # Updated when:
-set versijonummero "3.2.20150122"
+set versijonummero "3.3.20150526"
 #------------------------------------------------------------------------------------
 # Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
 # Minun reviiri alkaa tästä.
@@ -54,15 +54,16 @@ set kaupunki [lindex [split $kyla1 ", "] 2]
 #------------------------------------------------------------------------------------
 
 # "Paikalliset säähavainnot" -kohdan "Tuorein säähavainto:" alla oleva "Lämpötila" -sarake
-set lampotilahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div/div[2]/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/span/span[2]}]
+set lampotilahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[2]/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/span/span[2]}]
 set lampotila [[[lindex $lampotilahaku 0] childNodes] nodeValue] 
 
 #------------------------------------------------------------------------------------
 # Mittausaika:
 #------------------------------------------------------------------------------------
 
+# "Tuorein säähavainto:" vieressä oikealla oleva päivämäärä (26.5.2015)
 # Tämä näytti tältä 13.1.2014: <span class="time-stamp">13.1.2014 22:40&nbsp;Suomen aikaa</span>
-set mittausaikahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div/div[2]/div[1]/div/div[1]/table/caption/span[2]}]
+set mittausaikahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[2]/div[1]/div/div[1]/table/caption/span[2]}]
 set aika [$mittausaikahaku asText] 
 
 # En saanut väliä pois joten olkoot "Suomen aikaa" tekstissä, ihan sama...
@@ -73,15 +74,16 @@ set aika [$mittausaikahaku asText]
 # Mañana:
 #------------------------------------------------------------------------------------
 
-# Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 kohdalla oleva lämpötilasolu
-set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div/div/div[1]/div/div[2]/table/tbody/tr[2]/td[6]/span}]
+# Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 tai 15 kohdalla oleva lämpötilasolu
+set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[8]/div}]
 set huomenna [$huomennahaku asText]
 
 #------------------------------------------------------------------------------------
 # Auringon nousu ja -lasku ja päivän pituus:
 #------------------------------------------------------------------------------------
 
-set paivahaku [$fmi selectNodes {//div[@class="celestial-text"]}]
+# Tälle on oma palkkinsa, jossa vasemmalla oranssi aurinko-kuvake (26.5.2015)
+set paivahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[6]/div[2]}]
 set paiva [$paivahaku asText]
 
 #------------------------------------------------------------------------------------
