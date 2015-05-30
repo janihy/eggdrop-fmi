@@ -4,7 +4,7 @@
 # Fetches finnish weather from ilmatieteenlaitos.fi
 
 # Updated when:
-set versijonummero "3.3.20150526"
+set versijonummero "3.4.20150530"
 #------------------------------------------------------------------------------------
 # Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
 # Minun reviiri alkaa tästä.
@@ -71,12 +71,36 @@ set aika [$mittausaikahaku asText]
 # set aikasplitted [lindex [split $aika "  Suomen aikaa "] 1]
 
 #------------------------------------------------------------------------------------
+# Säätila:
+#------------------------------------------------------------------------------------
+
+# Lähituntien ennuste -välilehti ja ensimmäinen sarake
+set saatilahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/div}]
+set saatilaHtml [$saatilahaku asHTML]
+regexp {title="(.*?)"} $saatilaHtml saatilaMatch saatila1
+set saatila [lindex [split $saatila1 "."] 0]
+
+#------------------------------------------------------------------------------------
+# Sade:
+#------------------------------------------------------------------------------------
+
+# Edeltävän tunnin sateen todennäköisyys:
+set edeltavatuntisadetodnakhaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[1]/table/tbody/tr[7]/td[1]/div/span}]
+set sadetodnak [$edeltavatuntisadetodnakhaku asText] 
+
+#------------------------------------------------------------------------------------
 # Mañana:
 #------------------------------------------------------------------------------------
 
 # Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 tai 15 kohdalla oleva lämpötilasolu
 set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[8]/div}]
 set huomenna [$huomennahaku asText]
+
+# Klo 15 seuraavan päivän sarake
+set saatilahakuhuomenna [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[1]/td[8]/div}]
+set saatilahuomennaHtml [$saatilahakuhuomenna asHTML]
+regexp {title="(.*?)"} $saatilahuomennaHtml saatilahuomennaMatch saatilahuomenna1
+set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
 
 #------------------------------------------------------------------------------------
 # Auringon nousu ja -lasku ja päivän pituus:
@@ -92,8 +116,8 @@ set paiva [$paivahaku asText]
 #
 # Simsalabim:
 
-putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika).$paiva\Huomispäiväksi luvattu \002$huomenna\002."
-putlog "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika).$paiva\Huomispäiväksi luvattu \002$huomenna\002."
+putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika), $saatila. Edeltävän tunnin sateen todennäköisyys: $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002, $saatilahuomenna."
+putlog "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika), $saatila. Edeltävän tunnin sateen todennäköisyys: $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002, $saatilahuomenna."
 
 #putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila ($kuvaus, mitattu $aika).$paiva\Huomiseksi luvattu \002$huomenna\002." 
 
