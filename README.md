@@ -15,6 +15,6 @@ By using this script, you no longer need to look out the window to check the wea
 
 ## Requirements
 
-* Tcl 8.5
-* http 2.1
+* Tcl >= 8.4
+* http >= 2.1
 * tdom
