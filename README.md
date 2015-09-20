@@ -31,8 +31,8 @@ Feel free to chat if you use and like the script!
 #### QuakeNet
 
     12:53:06 -!- rolle [~rolle@dsl-jklbrasgw1-54fbb9-1.dhcp.inet.fi]
-    12:53:06 -!-  ircname  : http://roni.laukkarinen.info
-    12:53:06 -!-  channels : #dfig.takut @#kuurosokeat @#pulina 
+    12:53:06 -!-  ircname  : Go to: rolle.wtf
+    12:53:06 -!-  channels : @#dfig.takut @#pulina 
     12:53:06 -!-  server   : port80b.se.quakenet.org [Port80.se IRC Server]
     12:53:06 -!-  account  : RolleQ
     12:53:06 -!-  idle     : 0 days 1 hours 23 mins 2 secs [signon: Thu May 21 10:35:21 2015]
@@ -41,7 +41,7 @@ Feel free to chat if you use and like the script!
 #### IRCnet
 
     12:51:11 -!- rolle [~rolle@dsl-jklbrasgw1-54fbb9-1.dhcp.inet.fi]
-    12:51:11 -!-  ircname  : http://roni.laukkarinen.info
+    12:51:11 -!-  ircname  : Go to: rolle.wtf
     12:51:11 -!-  channels : #twt 
     12:51:11 -!-  server   : irc2.inet.fi [Sonera/iNET IRC server]
     12:51:11 -!-  idle     : 0 days 0 hours 1 mins 9 secs [signon: Thu May 21 08:51:28 2015]
