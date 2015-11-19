@@ -4,7 +4,7 @@
 # Fetches finnish weather from ilmatieteenlaitos.fi
 
 # Updated when:
-set versijonummero "3.4.20150530"
+set versijonummero "3.5.20151119"
 #------------------------------------------------------------------------------------
 # Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
 # Minun reviiri alkaa tästä.
@@ -106,8 +106,8 @@ set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
 # Auringon nousu ja -lasku ja päivän pituus:
 #------------------------------------------------------------------------------------
 
-# Tälle on oma palkkinsa, jossa vasemmalla oranssi aurinko-kuvake (26.5.2015)
-set paivahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[6]/div[2]}]
+# Tälle on oma palkkinsa, jossa vasemmalla oranssi aurinko-kuvake (19.11.2015)
+set paivahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[5]/div[2]}]
 set paiva [$paivahaku asText]
 
 #------------------------------------------------------------------------------------
