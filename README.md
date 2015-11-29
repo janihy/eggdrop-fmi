@@ -30,19 +30,19 @@ Feel free to chat if you use and like the script!
 
 #### QuakeNet
 
-    12:53:06 -!- rolle [~rolle@dsl-jklbrasgw1-54fbb9-1.dhcp.inet.fi]
-    12:53:06 -!-  ircname  : Go to: rolle.wtf
-    12:53:06 -!-  channels : @#dfig.takut @#pulina 
-    12:53:06 -!-  server   : port80b.se.quakenet.org [Port80.se IRC Server]
-    12:53:06 -!-  account  : RolleQ
-    12:53:06 -!-  idle     : 0 days 1 hours 23 mins 2 secs [signon: Thu May 21 10:35:21 2015]
-    12:53:06 -!- End of WHOIS
+    17:34:15          * | rolle (~rolle@dsl-jklbrasgw1-54fbb7-147.dhcp.inet.fi)
+    17:34:15          * | ircname: Roni Laukkarinen
+    17:34:15          * | Channels: @#kammio #dfig.takut @#pulina 
+    17:34:15          * | Server: servercentral.il.us.quakenet.org Server Central Network
+    17:34:15          * | Info: RolleQ
+    17:34:15          * | Idle: since 0 days 0 hours 4 mins 36 secs Signed on: Thu Nov 26 21:47:01 2015
+    17:34:15          * | End of WHOIS
 
 #### IRCnet
 
-    12:51:11 -!- rolle [~rolle@dsl-jklbrasgw1-54fbb9-1.dhcp.inet.fi]
-    12:51:11 -!-  ircname  : Go to: rolle.wtf
-    12:51:11 -!-  channels : #twt 
-    12:51:11 -!-  server   : irc2.inet.fi [Sonera/iNET IRC server]
-    12:51:11 -!-  idle     : 0 days 0 hours 1 mins 9 secs [signon: Thu May 21 08:51:28 2015]
-    12:51:11 -!- End of WHOIS
+    17:35:14          * | rolle_ (~rolle@dsl-jklbrasgw1-54fbb7-147.dhcp.inet.fi)
+    17:35:14          * | ircname: Roni Laukkarinen
+    17:35:14          * | Channels: #twt 
+    17:35:14          * | Server: irc2.inet.fi Sonera/iNET IRC server
+    17:35:14          * | Idle: since 2 days 13 hours 55 mins 4 secs Signed on: Fri Nov 27 02:38:12 2015
+    17:35:14          * | End of WHOIS
