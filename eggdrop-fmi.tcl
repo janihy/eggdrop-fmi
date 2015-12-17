@@ -1,14 +1,11 @@
-# eggdrop-fmi.tcl - FMI-sääscript for eggdrop IRC bot 
+# eggdrop-fmi.tcl - FMI-sääscript for eggdrop IRC bot
 # by Roni "rolle" Laukkarinen
 # rolle @ irc.quakenet.org
 # Fetches finnish weather from ilmatieteenlaitos.fi
 
 # Updated when:
-set versijonummero "3.6.20151122"
+set versijonummero "4.0.20151217"
 #------------------------------------------------------------------------------------
-# Elä herran tähen mäne koskemaan tai taivas putoaa niskaas!
-# Minun reviiri alkaa tästä.
-
 package require Tcl 8.5
 package require http 2.1
 package require tdom
@@ -18,64 +15,67 @@ bind pub - !saa pub:fmi
 bind pub - !keli pub:fmi
 bind pub - !sää pub:fmi
 
-set fmiurl "http://ilmatieteenlaitos.fi/saa/Helsinki" 
+set systemTime [clock seconds]
+set starttime [expr { $systemTime - 10800 }]
+set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
+set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=jyv%C3%A4skyl%C3%A4&timezone=Europe/Helsinki&starttime=$timestamp"
+set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/Helsinki"
 
-proc pub:fmi { nick uhost hand chan text } { 
+proc pub:fmi { nick uhost hand chan text } {
 
-#putserv "PRIVMSG $chan :$text?"
+  set systemTime [clock seconds]
+  set starttime [expr { $systemTime - 10800 }]
+  set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
 
-    if {[string trim $text] ne ""} {
-	set text [string toupper $text 0 0]
-	set fmiurl "http://ilmatieteenlaitos.fi/saa/$text"
+  if {[string trim $text] ne ""} {
+
+       set text [string toupper $text 0 0]
+	     set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$timestamp"
+       set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/$text"
+
     } else {
-	global fmiurl
+	     global fmiurl
     }
 
 set fmisivu [::http::data [::http::geturl $fmiurl]]
-set fmidata [dom parse -html $fmisivu] 
-set fmi [$fmidata documentElement] 
+set fmidata [dom parse $fmisivu]
+set fmi [$fmidata documentElement]
 
-# Haetaan eri osasia:
-# Note to self: Kopioi uusi XPath jos sorsa muuttuu!
+set fmisivuhtml [::http::data [::http::geturl $fmiurlhtml]]
+set fmihtmlsrc [dom parse -html $fmisivuhtml]
+set fmihtml [$fmihtmlsrc documentElement]
 
 #------------------------------------------------------------------------------------
-# Kaupunni:
+# Kaupunki:
 #------------------------------------------------------------------------------------
 
-# Tämä kohta on helpoin ottaa "Edellisen 2 vuorokauden havainnot" alla olevasta kuvasta (22.1.2015).
-set kaupunkihaku [$fmi selectNodes {//*[@id="_localweatherportlet_WAR_fmiwwwweatherportlets_parameter_image"]}]
-set kaupunkiHtml [$kaupunkihaku asHTML]
-regexp {alt="(.*?)"} $kaupunkiHtml kaupunkiMatch kyla1
-# Alt-tagihan on siis "Lämpötila, Helsinki Rautatientori", joten hankkiudutaan eroon "Lämpötila" -tekstistä splittaamalla se
-set kaupunki [lindex [split $kyla1 ", "] 2]
+set kaupunkihaku [$fmi selectNodes {(//target:Location[1]/gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/name"])[1]}]
+set kaupunki [$kaupunkihaku asText]
 
 #------------------------------------------------------------------------------------
 # Lämpötila:
 #------------------------------------------------------------------------------------
 
-# "Paikalliset säähavainnot" -kohdan "Tuorein säähavainto:" alla oleva "Lämpötila" -sarake
-set lampotilahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[2]/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/span/span[2]}]
-set lampotila [[[lindex $lampotilahaku 0] childNodes] nodeValue] 
+set lampotilahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[2]}]
+set lampotila [$lampotilahaku asText]
 
 #------------------------------------------------------------------------------------
 # Mittausaika:
 #------------------------------------------------------------------------------------
 
-# "Tuorein säähavainto:" vieressä oikealla oleva päivämäärä (26.5.2015)
-# Tämä näytti tältä 13.1.2014: <span class="time-stamp">13.1.2014 22:40&nbsp;Suomen aikaa</span>
-set mittausaikahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[2]/div[1]/div/div[1]/table/caption/span[2]}]
-set aika [$mittausaikahaku asText] 
-
-# En saanut väliä pois joten olkoot "Suomen aikaa" tekstissä, ihan sama...
-# Tämä hajosi 23.6.2014:
-# set aikasplitted [lindex [split $aika "  Suomen aikaa "] 1]
+set mittausaikahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:time)[2]}]
+set aika [$mittausaikahaku asText]
+set aikahieno [lindex [split $aika "T"] 1]
+set aikahienoformatted [lindex [split $aikahieno "+"] 0]
+set tunnit [lindex [split $aikahienoformatted ":"] 0]
+set minuutit [lindex [split $aikahienoformatted ":"] 1]
 
 #------------------------------------------------------------------------------------
 # Säätila:
 #------------------------------------------------------------------------------------
 
-# Lähituntien ennuste -välilehti ja ensimmäinen sarake
-set saatilahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/div}]
+# Lähituntien ennuste -välilehti ja ensimmäisen sarakkeen kuvake
+set saatilahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/div}]
 set saatilaHtml [$saatilahaku asHTML]
 regexp {title="(.*?)"} $saatilaHtml saatilaMatch saatila1
 set saatila [lindex [split $saatila1 "."] 0]
@@ -84,20 +84,20 @@ set saatila [lindex [split $saatila1 "."] 0]
 # Sade:
 #------------------------------------------------------------------------------------
 
-# Edeltävän tunnin sateen todennäköisyys:
-set edeltavatuntisadetodnakhaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[1]/table/tbody/tr[7]/td[1]/div/span}]
-set sadetodnak [$edeltavatuntisadetodnakhaku asText] 
+# Edeltävän tunnin sateen määrä:
+set sademaarahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[8]}]
+set sademaara [$sademaarahaku asText]
 
 #------------------------------------------------------------------------------------
 # Mañana:
 #------------------------------------------------------------------------------------
 
 # Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 tai 15 kohdalla oleva lämpötilasolu
-set huomennahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[8]/div}]
+set huomennahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[6]/div}]
 set huomenna [$huomennahaku asText]
 
-# Klo 15 seuraavan päivän sarake
-set saatilahakuhuomenna [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[1]/td[8]/div}]
+# Klo 15 seuraavan päivän sarakkeen kuvake
+set saatilahakuhuomenna [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[1]/td[6]/div}]
 set saatilahuomennaHtml [$saatilahakuhuomenna asHTML]
 regexp {title="(.*?)"} $saatilahuomennaHtml saatilahuomennaMatch saatilahuomenna1
 set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
@@ -107,7 +107,7 @@ set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
 #------------------------------------------------------------------------------------
 
 # Tälle on oma palkkinsa, jossa vasemmalla oranssi aurinko-kuvake (19.11.2015)
-set paivahaku [$fmi selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[6]/div[2]}]
+set paivahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[6]/div[2]}]
 set paiva [$paivahaku asText]
 
 #------------------------------------------------------------------------------------
@@ -116,10 +116,8 @@ set paiva [$paivahaku asText]
 #
 # Simsalabim:
 
-putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika), $saatila. Edeltävän tunnin sateen todennäköisyys: $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002, $saatilahuomenna."
-putlog "PRIVMSG $chan :\002$kaupunki\002 $lampotila (mitattu $aika), $saatila. Edeltävän tunnin sateen todennäköisyys: $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002, $saatilahuomenna."
-
-#putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila ($kuvaus, mitattu $aika).$paiva\Huomiseksi luvattu \002$huomenna\002." 
+putserv "PRIVMSG $chan :\002$kaupunki\002: $lampotila °C (mitattu kello $tunnit:$minuutit). Edeltävän tunnin sademäärä: $sademaara mm.$paiva\Huomispäiväksi luvattu \002$huomenna\002, $saatilahuomenna."
+putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila °C (mitattu kello $tunnit:$minuutit). Edeltävän tunnin sademäärä: $sademaara mm.$paiva\Huomispäiväksi luvattu \002$huomenna\002, $saatilahuomenna."
 
 # Output:
 # 09:55:28 <rolle> !sää jyväskylä
