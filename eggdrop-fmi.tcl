@@ -2,9 +2,10 @@
 # by Roni "rolle" Laukkarinen
 # rolle @ irc.quakenet.org
 # Fetches finnish weather from ilmatieteenlaitos.fi
+# API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
 # Updated when:
-set versijonummero "4.0.20151217"
+set versio "4.1.20151220"
 #------------------------------------------------------------------------------------
 package require Tcl 8.5
 package require http 2.1
@@ -56,7 +57,7 @@ set kaupunki [$kaupunkihaku asText]
 # Lämpötila:
 #------------------------------------------------------------------------------------
 
-set lampotilahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[2]}]
+set lampotilahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}]
 set lampotila [$lampotilahaku asText]
 
 #------------------------------------------------------------------------------------
@@ -127,4 +128,4 @@ putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila °C (mitattu kello $tunnit:
 }
 
 # Kukkuluuruu.
-putlog "Rolle's weatherscript (version $versijonummero) LOADED!"
+putlog "Rolle's weatherscript (version $versio) LOADED!"
