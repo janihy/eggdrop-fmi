@@ -5,7 +5,7 @@
 # API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
 # Updated when:
-set versio "4.2.20151220"
+set versio "4.3.20160102"
 #------------------------------------------------------------------------------------
 package require Tcl 8.5
 package require http 2.1
@@ -124,8 +124,8 @@ set paiva [$paivahaku asText]
 #
 # Simsalabim:
 
-putserv "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C (mitattu kello $tunnit:$minuutit). Edeltävän tunnin sademäärä: $sademaara mm, $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
-putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C (mitattu kello $tunnit:$minuutit). Edeltävän tunnin sademäärä: $sademaara mm, $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
+putserv "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm, $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
+putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm, $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
 
 # Output:
 # 09:55:28 <rolle> !sää jyväskylä
