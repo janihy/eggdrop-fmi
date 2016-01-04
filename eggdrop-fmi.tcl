@@ -5,7 +5,7 @@
 # API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
 # Updated when:
-set versio "4.3.20160102"
+set versio "4.4.20160104"
 #------------------------------------------------------------------------------------
 package require Tcl 8.5
 package require http 2.1
@@ -101,11 +101,11 @@ set sadetodnak [lindex [split $edeltavatodnak1 "."] 0]
 #------------------------------------------------------------------------------------
 
 # Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 tai 15 kohdalla oleva lämpötilasolu
-set huomennahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[6]/div}]
+set huomennahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[8]/div}]
 set huomenna [$huomennahaku asText]
 
 # Klo 15 seuraavan päivän sarakkeen kuvake
-set saatilahakuhuomenna [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[1]/td[6]/div}]
+set saatilahakuhuomenna [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[1]/td[8]/div}]
 set saatilahuomennaHtml [$saatilahakuhuomenna asHTML]
 regexp {title="(.*?)"} $saatilahuomennaHtml saatilahuomennaMatch saatilahuomenna1
 set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
