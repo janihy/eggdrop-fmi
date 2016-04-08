@@ -5,7 +5,7 @@
 # API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
 # Updated when:
-set versio "4.4.20160104"
+set versio "4.5.20160408"
 #------------------------------------------------------------------------------------
 package require Tcl 8.5
 package require http 2.1
@@ -19,7 +19,7 @@ bind pub - !sää pub:fmi
 set systemTime [clock seconds]
 set starttime [expr { $systemTime - 10800 }]
 set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
-set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=jyv%C3%A4skyl%C3%A4&timezone=Europe/Helsinki&starttime=$timestamp"
+set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=jyv%C3%A4skyl%C3%A4&timezone=Europe/Helsinki"
 set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/Helsinki"
 
 proc pub:fmi { nick uhost hand chan text } {
@@ -31,11 +31,11 @@ proc pub:fmi { nick uhost hand chan text } {
   if {[string trim $text] ne ""} {
 
        set text [string toupper $text 0 0]
-	     set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$timestamp"
+       set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki"
        set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/$text"
 
     } else {
-	     global fmiurl
+       global fmiurl
        global fmiurlhtml
     }
 
@@ -130,7 +130,7 @@ putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sa
 # Output:
 # 09:55:28 <rolle> !sää jyväskylä
 # 09:55:29 <kummitus> Jyväskylä -13,4 °C (pilvistä, valoisaa, mitattu 13.1.2014 9:40 Suomen aikaa). Auringonnousu tänään 9:28.
-# 		      Auringonlasku tänään 15:25. Päivän pituus on 5 h 57 min. Huomiseksi luvattu -14°.
+#           Auringonlasku tänään 15:25. Päivän pituus on 5 h 57 min. Huomiseksi luvattu -14°.
 
 }
 
