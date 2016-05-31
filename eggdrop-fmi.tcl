@@ -5,7 +5,7 @@
 # API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
 # Updated when:
-set versio "4.5.20160408"
+set versio "4.6.20160531"
 #------------------------------------------------------------------------------------
 package require Tcl 8.5
 package require http 2.1
@@ -90,18 +90,12 @@ set saatila [lindex [split $saatila1 "."] 0]
 set sademaarahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[8]}]
 set sademaara [$sademaarahaku asText]
 
-# Edeltävän tunnin sateen todennäköisyys (lähtituntien ennuste -tabi, "Sateen todennäköisyys ja määrä" kohdasta ensimmäinen sarake ja sen div, jossa title):
-set edeltavatodnakhaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[1]/table/tbody/tr[7]/td[1]/div}]
-set edeltavatodnakHtml [$edeltavatodnakhaku asHTML]
-regexp {title="(.*?)"} $edeltavatodnakHtml edeltavatodnakMatch edeltavatodnak1
-set sadetodnak [lindex [split $edeltavatodnak1 "."] 0]
-
 #------------------------------------------------------------------------------------
 # Mañana:
 #------------------------------------------------------------------------------------
 
 # Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 tai 15 kohdalla oleva lämpötilasolu
-set huomennahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[8]/div}]
+set huomennahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[7]/div}]
 set huomenna [$huomennahaku asText]
 
 # Klo 15 seuraavan päivän sarakkeen kuvake
@@ -124,8 +118,8 @@ set paiva [$paivahaku asText]
 #
 # Simsalabim:
 
-putserv "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm, $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
-putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm, $sadetodnak.$paiva\Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
+putserv "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
+putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
 
 # Output:
 # 09:55:28 <rolle> !sää jyväskylä
