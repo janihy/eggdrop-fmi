@@ -5,7 +5,7 @@
 # API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
 # Updated when:
-set versio "4.6.20160531"
+set versio "4.7.20170102"
 #------------------------------------------------------------------------------------
 package require Tcl 8.5
 package require http 2.1
@@ -109,7 +109,7 @@ set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
 #------------------------------------------------------------------------------------
 
 # Tälle on oma palkkinsa, jossa vasemmalla oranssi aurinko-kuvake (19.11.2015)
-set paivahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[6]/div[2]}]
+set paivahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[7]/div[2]}]
 set paiva [$paivahaku asText]
 
 #------------------------------------------------------------------------------------
@@ -118,8 +118,8 @@ set paiva [$paivahaku asText]
 #
 # Simsalabim:
 
-putserv "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
-putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit). Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
+putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit), $saatila. Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna. $paiva"
+# putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit), $saatila. Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
 
 # Output:
 # 09:55:28 <rolle> !sää jyväskylä
