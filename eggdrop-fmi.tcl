@@ -19,7 +19,7 @@ bind pub - !sää pub:fmi
 set systemTime [clock seconds]
 set starttime [expr { $systemTime - 10800 }]
 set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
-set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=jyv%C3%A4skyl%C3%A4&timezone=Europe/Helsinki"
+set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=espoo&timezone=Europe/Helsinki"
 set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/Helsinki"
 
 proc pub:fmi { nick uhost hand chan text } {
