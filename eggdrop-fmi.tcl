@@ -39,6 +39,7 @@ proc pub:fmi { nick uhost hand chan text } {
        global fmiurlhtml
     }
 
+putlog $fmiurl
 set fmisivu [::http::data [::http::geturl $fmiurl]]
 set fmidata [dom parse $fmisivu]
 set fmi [$fmidata documentElement]
@@ -77,13 +78,19 @@ set minuutit [lindex [split $aikahienoformatted ":"] 1]
 #------------------------------------------------------------------------------------
 
 # Lähituntien ennuste -välilehti ja ensimmäisen sarakkeen kuvake
-set saatilahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[1]/table/tbody/tr[1]/td[1]/div}]
+set saatilahaku [$fmihtml selectNodes {//*[@class='first-mobile-forecast-time-step-content']//*[@class='weather-symbol-container']/div}]
+putlog [$saatilahaku asHTML]
 set saatilaHtml [$saatilahaku asHTML]
 regexp {title="(.*?)"} $saatilaHtml saatilaMatch saatila1
 set saatila [lindex [split $saatila1 "."] 0]
 
 set rhhaku [$fmi selectNodes {(//wml2:MeasurementTimeseries[@gml:id='obs-obs-1-1-rh']/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}]
-set rh [format "%.f" [$rhhaku asText]]
+set rh [$rhhaku asText]
+putlog $rh
+if {$rh ne "NaN"} {
+  set rh [format "%.f" [$rhhaku asText]]
+}
+
 
 #------------------------------------------------------------------------------------
 # Sade:
