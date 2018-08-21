@@ -82,6 +82,9 @@ set saatilaHtml [$saatilahaku asHTML]
 regexp {title="(.*?)"} $saatilaHtml saatilaMatch saatila1
 set saatila [lindex [split $saatila1 "."] 0]
 
+set rhhaku [$fmi selectNodes {(//wml2:MeasurementTimeseries[@gml:id='obs-obs-1-1-rh']/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}]
+set rh [format "%.f" [$rhhaku asText]]
+
 #------------------------------------------------------------------------------------
 # Sade:
 #------------------------------------------------------------------------------------
@@ -118,7 +121,7 @@ set paiva [$paivahaku asText]
 #
 # Simsalabim:
 
-putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit), $saatila. Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna. $paiva"
+putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit), $saatila. Ilmankosteus $rh %, sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna. $paiva"
 # putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit), $saatila. Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
 
 # Output:
