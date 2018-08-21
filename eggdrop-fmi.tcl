@@ -17,7 +17,7 @@ bind pub - !keli pub:fmi
 bind pub - !sää pub:fmi
 
 set systemTime [clock seconds]
-set starttime [expr { $systemTime - 10800 }]
+set starttime [expr { $systemTime - 9600 }]
 set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
 set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=espoo&timezone=Europe/Helsinki"
 set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/Helsinki"
@@ -25,13 +25,13 @@ set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/Helsinki"
 proc pub:fmi { nick uhost hand chan text } {
 
   set systemTime [clock seconds]
-  set starttime [expr { $systemTime - 10800 }]
+  set starttime [expr { $systemTime - 9600 }]
   set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
 
   if {[string trim $text] ne ""} {
 
        set text [string toupper $text 0 0]
-       set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki"
+       set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
        set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/$text"
 
     } else {
@@ -79,14 +79,13 @@ set minuutit [lindex [split $aikahienoformatted ":"] 1]
 
 # Lähituntien ennuste -välilehti ja ensimmäisen sarakkeen kuvake
 set saatilahaku [$fmihtml selectNodes {//*[@class='first-mobile-forecast-time-step-content']//*[@class='weather-symbol-container']/div}]
-putlog [$saatilahaku asHTML]
+#putlog [$saatilahaku asHTML]
 set saatilaHtml [$saatilahaku asHTML]
 regexp {title="(.*?)"} $saatilaHtml saatilaMatch saatila1
 set saatila [lindex [split $saatila1 "."] 0]
 
 set rhhaku [$fmi selectNodes {(//wml2:MeasurementTimeseries[@gml:id='obs-obs-1-1-rh']/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}]
 set rh [$rhhaku asText]
-putlog $rh
 if {$rh ne "NaN"} {
   set rh [format "%.f" [$rhhaku asText]]
 }
