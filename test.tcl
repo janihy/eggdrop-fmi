@@ -130,3 +130,5 @@ proc dcc {cmd {value ""}} {
 source $scriptname
 
 pub !sää
+pub !sää järvenpää
+pub !sää kerava
