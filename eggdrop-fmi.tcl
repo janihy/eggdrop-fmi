@@ -4,11 +4,13 @@
 # Fetches finnish weather from ilmatieteenlaitos.fi
 # API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
-# Updated when:
-set versio "4.7.20170102"
+# Updated when: 2/2019
+set versio "4.8"
 #------------------------------------------------------------------------------------
 package require Tcl 8.5
 package require http 2.1
+package require tls
+http::register https 443 [list ::tls::socket -tls1 1]
 package require tdom
 
 bind pub - !fmi pub:fmi
@@ -19,8 +21,8 @@ bind pub - !sää pub:fmi
 set systemTime [clock seconds]
 set starttime [expr { $systemTime - 9600 }]
 set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
-set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=espoo&timezone=Europe/Helsinki"
-set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/Helsinki"
+set fmiurl "https://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=espoo&timezone=Europe/Helsinki"
+set fmiurlhtml "https://ilmatieteenlaitos.fi/saa/Espoo"
 
 proc pub:fmi { nick uhost hand chan text } {
 
@@ -31,15 +33,14 @@ proc pub:fmi { nick uhost hand chan text } {
   if {[string trim $text] ne ""} {
 
        set text [string toupper $text 0 0]
-       set fmiurl "http://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
-       set fmiurlhtml "http://ilmatieteenlaitos.fi/saa/$text"
+       set fmiurl "https://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
+       set fmiurlhtml "https://ilmatieteenlaitos.fi/saa/$text"
 
     } else {
        global fmiurl
        global fmiurlhtml
     }
 
-putlog $fmiurl
 set fmisivu [::http::data [::http::geturl $fmiurl]]
 set fmidata [dom parse $fmisivu]
 set fmi [$fmidata documentElement]
@@ -104,12 +105,14 @@ set sademaara [$sademaarahaku asText]
 #------------------------------------------------------------------------------------
 
 # Tämä on "Lähipäivien ennuste" kohdan sarakkeesta kellonajan 14 tai 15 kohdalla oleva lämpötilasolu
-set huomennahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[2]/td[7]/div}]
-set huomenna [$huomennahaku asText]
+set huomennahaku [$fmihtml selectNodes {(//div[contains(@class, 'mid')]/table/tbody/tr[@class='meteogram-temperatures']/td/div[contains(@class, 'temperature')])}]
+#putlog [[lindex $huomennahaku 7] asText]
+set huomenna [[lindex $huomennahaku 7] asText]
+
 
 # Klo 15 seuraavan päivän sarakkeen kuvake
-set saatilahakuhuomenna [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[2]/table/tbody/tr[1]/td[8]/div}]
-set saatilahuomennaHtml [$saatilahakuhuomenna asHTML]
+set saatilahakuhuomenna [$fmihtml selectNodes {(//div[contains(@class, 'mid')]/table/tbody/tr[@class='meteogram-weather-symbols']/td/div)}]
+set saatilahuomennaHtml [[lindex $saatilahakuhuomenna 7] asHTML]
 regexp {title="(.*?)"} $saatilahuomennaHtml saatilahuomennaMatch saatilahuomenna1
 set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
 
@@ -118,8 +121,8 @@ set saatilahuomenna [lindex [split $saatilahuomenna1 "."] 0]
 #------------------------------------------------------------------------------------
 
 # Tälle on oma palkkinsa, jossa vasemmalla oranssi aurinko-kuvake (19.11.2015)
-set paivahaku [$fmihtml selectNodes {//*[@id="p_p_id_localweatherportlet_WAR_fmiwwwweatherportlets_"]/div/div/div/div[2]/div/div[1]/div/div[7]/div[2]}]
-set paiva [$paivahaku asText]
+set paivahaku [$fmihtml selectNodes {//*[@class='celestial-status-text']}]
+set paiva [[lindex $paivahaku 1] asText]
 
 #------------------------------------------------------------------------------------
 # Tulostetaan palikat alle
@@ -128,7 +131,6 @@ set paiva [$paivahaku asText]
 # Simsalabim:
 
 putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit), $saatila. Ilmankosteus $rh %, sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna. $paiva"
-# putlog "PRIVMSG $chan :\002$kaupunki\002: $lampotila\°C ($tunnit:$minuutit), $saatila. Sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002C, $saatilahuomenna."
 
 # Output:
 # 09:55:28 <rolle> !sää jyväskylä
