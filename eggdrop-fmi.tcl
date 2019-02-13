@@ -54,7 +54,7 @@ proc pub:fmi { nick uhost hand chan text } {
   # Kaupunki:
   #------------------------------------------------------------------------------------
 
-  putlog [$fmi asText]
+  #putlog [$fmi asText]
   set kaupunkihaku [$fmi selectNodes {(//target:Location[1]/gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/name"])[1]}]
   set kaupunki [$kaupunkihaku asText]
 
