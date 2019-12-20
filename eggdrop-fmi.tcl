@@ -21,7 +21,7 @@ bind pub - !sää pub:fmi
 set systemTime [clock seconds]
 set starttime [expr { $systemTime - 9600 }]
 set timestamp [clock format $starttime -format %Y-%m-%dT%H:%M:%S]
-set fmiurl "https://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=elimäki&timezone=Europe/Helsinki&starttime=$starttime"
+set fmiurl "https://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=elimäki&timezone=Europe/Helsinki&starttime=$starttime"
 set fmiurlhtml "https://ilmatieteenlaitos.fi/saa/Elimäki"
 
 proc pub:fmi { nick uhost hand chan text } {
@@ -34,7 +34,7 @@ proc pub:fmi { nick uhost hand chan text } {
   if {[string trim $text] ne ""} {
 
        set text [string toupper $text 0 0]
-       set fmiurl "https://data.fmi.fi/fmi-apikey/0218711b-a299-44b2-a0b0-a4efc34b6160/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
+       set fmiurl "https://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
        set fmiurlhtml "https://ilmatieteenlaitos.fi/saa/$text"
 
     } else {
