@@ -1,11 +1,11 @@
 # eggdrop-fmi.tcl - FMI-sääscript for eggdrop IRC bot
-# by Roni "rolle" Laukkarinen
-# rolle @ irc.quakenet.org
+# originally by Roni "rolle" Laukkarinen
+# modified by tuplis
 # Fetches finnish weather from ilmatieteenlaitos.fi
 # API querys: http://ilmatieteenlaitos.fi/tallennetut-kyselyt
 
-# Updated when: 2/2019
-set versio "4.8"
+# Updated when: 3/2020
+set versio "4.9"
 #------------------------------------------------------------------------------------
 package require Tcl 8.6
 package require http 2.8
@@ -21,6 +21,7 @@ set systemTime [clock seconds]
 set starttime [expr { $systemTime - 3600 }]
 set fmiurl "https://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=Espoo&timezone=Europe/Helsinki&starttime=$starttime"
 set fmiforecasturl "http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::timevaluepair&place=Espoo&timezone=Europe/Helsinki&starttime=$starttime"
+set message ""
 
 proc pub:fmi { nick uhost hand chan text } {
   http::register https 443 ::tls::socket
@@ -45,6 +46,7 @@ proc pub:fmi { nick uhost hand chan text } {
   set fmiforecastdata [dom parse $fmiforecastsivu]
   set fmiforecast [$fmiforecastdata documentElement]
 
+
   #------------------------------------------------------------------------------------
   # Kaupunki:
   #------------------------------------------------------------------------------------
@@ -64,19 +66,6 @@ proc pub:fmi { nick uhost hand chan text } {
   }
 
 
-  set saatila [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:value)[2]}] asText]
-  set rex [regexp {[0-9]+} $saatila saatila]
-
-  set saatila [pub:parseWeatherSymbol $saatila]
-
-
-  set timestamp [clock format [expr { $systemTime + 86400 }] -format "%Y-%m-%dT15:00:00+02:00"]
-
-  set saatilahuomenna [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]
-  set rex [regexp {[0-9]+} $saatilahuomenna saatilahuomenna]
-  set saatilahuomenna [pub:parseWeatherSymbol $saatilahuomenna]
-
-  set huomenna [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-Temperature']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]
   #------------------------------------------------------------------------------------
   # Mittausaika:
   #------------------------------------------------------------------------------------
@@ -88,16 +77,29 @@ proc pub:fmi { nick uhost hand chan text } {
   set tunnit [lindex [split $aikahienoformatted ":"] 0]
   set minuutit [lindex [split $aikahienoformatted ":"] 1]
 
+  append message "\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit), "
+
+
   #------------------------------------------------------------------------------------
   # Säätila:
+  #------------------------------------------------------------------------------------
+
+  set saatila [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:value)[2]}] asText]
+  set rex [regexp {[0-9]+} $saatila saatila]
+  set saatila [pub:parseWeatherSymbol $saatila]
+
+  append message "$saatila. "
+
+
+  #------------------------------------------------------------------------------------
+  # Ilmankosteus:
   #------------------------------------------------------------------------------------
 
   set rhhaku [$fmi selectNodes {(//wml2:MeasurementTimeseries[@gml:id='obs-obs-1-1-rh']/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}]
   set rh [$rhhaku asText]
   if {$rh ne "NaN"} {
     set rh [format "%.f" [$rhhaku asText]]
-  } else {
-    set rh "-"
+    append message "Ilmankosteus $rh %, "
   }
 
 
@@ -108,19 +110,38 @@ proc pub:fmi { nick uhost hand chan text } {
   # Edeltävän tunnin sateen määrä:
   set sademaarahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[8]}]
   set sademaara [$sademaarahaku asText]
-  if {$sademaara eq "NaN"} {
-    set sademaara "-"
+  if {$sademaara ne "NaN"} {
+    append message "sademäärä (<1h): $sademaara mm. "
   }
 
-  putserv "PRIVMSG $chan :\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit), $saatila. Ilmankosteus $rh %, sademäärä (<1h): $sademaara mm. \Huomispäiväksi luvattu \002$huomenna\002\°C, $saatilahuomenna."
 
-  # Output:
-  # PRIVMSG #testchannel :Espoo Tapiola 3.9°C (18:40), pilvistä, pimeää. Ilmankosteus 98 %, sademäärä (<1h): 0.0 mm. Huomispäiväksi luvattu 4°C, pilvistä, pimeää.  Auringonnousu tänään 9:25. Auringonlasku tänään 15:13. Päivän pituus on 5 h 48 min.
+  #------------------------------------------------------------------------------------
+  # Tuuli:
+  #------------------------------------------------------------------------------------
 
-  # 09:55:28 <rolle> !sää jyväskylä
-  # 09:55:29 <kummitus> Jyväskylä -13,4 °C (pilvistä, valoisaa, mitattu 13.1.2014 9:40 Suomen aikaa). Auringonnousu tänään 9:28.
-  #           Auringonlasku tänään 15:25. Päivän pituus on 5 h 57 min. Huomiseksi luvattu -14°.
+  set ws [[$fmi selectNodes {(//wml2:MeasurementTimeseries[@gml:id='obs-obs-1-1-ws_10min']/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}] asText]
 
+  if {$ws ne "NaN"} {
+    set wddegrees [format "%.0f" [[$fmi selectNodes {(//wml2:MeasurementTimeseries[@gml:id='obs-obs-1-1-wd_10min']/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}] asText]]
+    set wd [pub:parseWindDirection $wddegrees]
+    set ws [format "%.1f" $ws]
+    append message "Tuulee $ws m/s $wd ($wddegrees°). "
+  }
+
+
+  #------------------------------------------------------------------------------------
+  # Huomenna:
+  #------------------------------------------------------------------------------------
+
+  set timestamp [clock format [expr { $systemTime + 86400 }] -format "%Y-%m-%dT15:00:00+02:00"]
+  set saatilahuomenna [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]
+  set rex [regexp {[0-9]+} $saatilahuomenna saatilahuomenna]
+  set saatilahuomenna [pub:parseWeatherSymbol $saatilahuomenna]
+  set huomenna [format "%.1f" [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-Temperature']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]]
+
+  append message "Huomispäiväksi luvattu $huomenna\°C, $saatilahuomenna."
+
+  putserv "PRIVMSG $chan :$message"
 }
 
 proc pub:parseWeatherSymbol {symbol} {
@@ -155,6 +176,22 @@ proc pub:parseWeatherSymbol {symbol} {
   } $symbol]
   return $symbol
 }
+
+proc pub:parseWindDirection {direction} {
+  set direction [expr {int(($direction+22.5)/45)%8}]
+  set direction [string map -nocase {
+    "0" "pohjoisesta"
+    "1" "koillisesta"
+    "2" "idästä"
+    "3" "kaakosta"
+    "4" "etelästä"
+    "5" "lounaasta"
+    "6" "lännestä"
+    "7" "luoteesta"
+  } $direction]
+  return $direction
+}
+
 
 # Kukkuluuruu.
 putlog "Rolle's weatherscript (version $versio) LOADED!"
