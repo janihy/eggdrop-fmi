@@ -97,10 +97,6 @@ proc pub:fmi { nick uhost hand chan text } {
 
   set rhhaku [$fmi selectNodes {(//wml2:MeasurementTimeseries[@gml:id='obs-obs-1-1-rh']/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[1]}]
   set rh [$rhhaku asText]
-  if {$rh ne "NaN"} {
-    set rh [format "%.f" [$rhhaku asText]]
-    append message "Ilmankosteus $rh %, "
-  }
 
 
   #------------------------------------------------------------------------------------
@@ -110,9 +106,20 @@ proc pub:fmi { nick uhost hand chan text } {
   # Edeltävän tunnin sateen määrä:
   set sademaarahaku [$fmi selectNodes {(//om:result[1]/wml2:MeasurementTimeseries/wml2:point[last()]/wml2:MeasurementTVP/wml2:value)[8]}]
   set sademaara [$sademaarahaku asText]
-  if {$sademaara ne "NaN"} {
-    append message "sademäärä (<1h): $sademaara mm. "
+
+
+  if {$rh ne "NaN"} {
+    set rh [format "%.f" [$rhhaku asText]]
+    append message "Ilmankosteus $rh %"
+    if {$sademaara ne "NaN"} {
+      append message ", sademäärä (<1h): $sademaara mm. "
+    } else {
+      append message ". "
+    }
   }
+
+
+
 
 
   #------------------------------------------------------------------------------------
