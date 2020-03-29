@@ -135,12 +135,12 @@ proc pub:fmi { nick uhost hand chan text } {
     append message "Tuulee $ws m/s $wd ($wddegrees°). "
   }
 
-
   #------------------------------------------------------------------------------------
   # Huomenna:
   #------------------------------------------------------------------------------------
 
-  set timestamp [clock format [expr { $systemTime + 86400 }] -format "%Y-%m-%dT15:00:00+02:00"]
+  set timestamp [clock format [expr { $systemTime + 86400 }] -format "%Y-%m-%dT15:00:00%z"]
+  set timestamp  [string cat [string range $timestamp 0 21] ":" [string range $timestamp 22 23]]
   set saatilahuomenna [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]
   set rex [regexp {[0-9]+} $saatilahuomenna saatilahuomenna]
   set saatilahuomenna [pub:parseWeatherSymbol $saatilahuomenna]
