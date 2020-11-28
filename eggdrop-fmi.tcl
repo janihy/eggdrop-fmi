@@ -18,7 +18,7 @@ bind pub - !keli pub:fmi
 bind pub - !sää pub:fmi
 
 set systemTime [clock seconds]
-set starttime [expr { $systemTime - 3600 }]
+set starttime [expr { $systemTime - 9600 }]
 set fmiurl "https://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=Espoo&timezone=Europe/Helsinki&starttime=$starttime"
 set fmiforecasturl "http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::timevaluepair&place=Espoo&timezone=Europe/Helsinki&starttime=$starttime"
 set message ""
@@ -28,19 +28,30 @@ proc pub:fmi { nick uhost hand chan text } {
   set systemTime [clock seconds]
   set starttime [expr { $systemTime - 9600 }]
 
-  if {[string trim $text] ne ""} {
-       set text [string toupper $text 0 0]
-       set fmiurl "https://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
-       set fmiforecasturl "http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
+  set text [string trim $text]
 
+  if {$text ne ""} {
+    if {[string is double -strict $text]} {
+      set type "fmisid"
+      set fmiurl "https://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&fmisid=$text&timezone=Europe/Helsinki&starttime=$starttime"
+      set fmiforecasturl "http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::timevaluepair&fmisid=$text&timezone=Europe/Helsinki&starttime=$starttime"
     } else {
-       global fmiurl
-       global fmiforecasturl
+      set type "place"
+      set text [string toupper $text 0 0]
+      set fmiurl "https://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
+      set fmiforecasturl "http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::timevaluepair&place=$text&timezone=Europe/Helsinki&starttime=$starttime"
     }
+
+  } else {
+    set type "place"
+    global fmiurl
+    global fmiforecasturl
+  }
 
   set fmisivu [::http::data [::http::geturl $fmiurl]]
   set fmidata [dom parse $fmisivu]
   set fmi [$fmidata documentElement]
+
 
   set fmiforecastsivu [::http::data [::http::geturl $fmiforecasturl]]
   set fmiforecastdata [dom parse $fmiforecastsivu]
@@ -77,18 +88,20 @@ proc pub:fmi { nick uhost hand chan text } {
   set tunnit [lindex [split $aikahienoformatted ":"] 0]
   set minuutit [lindex [split $aikahienoformatted ":"] 1]
 
-  append message "\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit), "
+  append message "\002$kaupunki\002 $lampotila\°C ($tunnit:$minuutit)"
 
 
   #------------------------------------------------------------------------------------
   # Säätila:
   #------------------------------------------------------------------------------------
 
-  set saatila [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:value)[2]}] asText]
-  set rex [regexp {[0-9]+} $saatila saatila]
-  set saatila [pub:parseWeatherSymbol $saatila]
+  if {$type eq "place"} {
+    set saatila [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:value)[2]}] asText]
+    set rex [regexp {[0-9]+} $saatila saatila]
+    set saatila [pub:parseWeatherSymbol $saatila]
 
-  append message "$saatila. "
+    append message ", $saatila"
+  }
 
 
   #------------------------------------------------------------------------------------
@@ -110,16 +123,13 @@ proc pub:fmi { nick uhost hand chan text } {
 
   if {$rh ne "NaN"} {
     set rh [format "%.f" [$rhhaku asText]]
-    append message "Ilmankosteus $rh %"
+    append message ". Ilmankosteus $rh %"
     if {$sademaara ne "NaN"} {
       append message ", sademäärä (<1h): $sademaara mm. "
     } else {
       append message ". "
     }
   }
-
-
-
 
 
   #------------------------------------------------------------------------------------
@@ -135,19 +145,21 @@ proc pub:fmi { nick uhost hand chan text } {
     append message "Tuulee $ws m/s $wd ($wddegrees°). "
   }
 
+
   #------------------------------------------------------------------------------------
   # Huomenna:
   #------------------------------------------------------------------------------------
 
-  set timestamp [clock format [expr { $systemTime + 18*60*60 }] -format "%Y-%m-%dT15:00:00%z"]
-  set timestamp  [string cat [string range $timestamp 0 21] ":" [string range $timestamp 22 23]]
-  set saatilahuomenna [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]
-  set rex [regexp {[0-9]+} $saatilahuomenna saatilahuomenna]
-  set saatilahuomenna [pub:parseWeatherSymbol $saatilahuomenna]
-  set huomenna [format "%.1f" [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-Temperature']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]]
+  if {$type eq "place"} {
+    set timestamp [clock format [expr { $systemTime + 18*60*60 }] -format "%Y-%m-%dT15:00:00%z"]
+    set timestamp  [string cat [string range $timestamp 0 21] ":" [string range $timestamp 22 23]]
+    set saatilahuomenna [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-WeatherSymbol3']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]
+    set rex [regexp {[0-9]+} $saatilahuomenna saatilahuomenna]
+    set saatilahuomenna [pub:parseWeatherSymbol $saatilahuomenna]
+    set huomenna [format "%.1f" [[$fmiforecast selectNodes {(//wml2:MeasurementTimeseries[@gml:id='mts-1-1-Temperature']/wml2:point/wml2:MeasurementTVP/wml2:time[.=$timestamp]/following-sibling::wml2:value)}] asText]]
 
-  append message "Huomispäiväksi luvattu $huomenna\°C, $saatilahuomenna."
-
+    append message "Huomispäiväksi luvattu $huomenna\°C, $saatilahuomenna."
+  }
   putserv "PRIVMSG $chan :$message"
 }
 
